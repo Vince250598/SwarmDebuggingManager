@@ -28,6 +28,7 @@ class Product {
     setName(name) {
         this.name = name;
     }
+    //should function be static?
     chooseProduct(currentUser) {
         return __awaiter(this, void 0, void 0, function* () {
             const products = yield this.getProducts(currentUser);
