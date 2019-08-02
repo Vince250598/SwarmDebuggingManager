@@ -1,7 +1,33 @@
 import * as vscode from 'vscode';
 import { request } from 'graphql-request';
-import { User } from './developer';
+import { Developer } from './developer';
 import { SERVERURL } from '../extension';
+
+export class Product {
+
+    private id: number = -1;
+    private name: string = "";
+
+    constructor(name: string) {
+        this.name = name;
+    }
+
+    getID() {
+        return this.id;
+    }
+
+    setID(id: number) {
+        this.id = id;
+    }
+
+    getName() {
+        return this.name;
+    }
+
+    setName(name: string) {
+        this.name = name;
+    }
+}
 
 export class ProductQuickPickItem implements vscode.QuickPickItem {
 
@@ -21,7 +47,7 @@ export class ProductQuickPickItem implements vscode.QuickPickItem {
 	}
 }
 
-export async function chooseProduct(currentUser: User) {
+export async function chooseProduct(currentUser: Developer) {
 
 	const products: ProductQuickPickItem[] = await getProducts(currentUser);
 	if(products.length === 0){
@@ -39,7 +65,7 @@ export async function chooseProduct(currentUser: User) {
 
 }
 
-export async function getProducts(currentUser: User) : Promise<vscode.QuickPickItem[]> {
+export async function getProducts(currentUser: Developer) : Promise<vscode.QuickPickItem[]> {
 	//Look into multiple graphql queries in one request
 	const products: ProductQuickPickItem[] = [];
 
@@ -50,7 +76,7 @@ export async function getProducts(currentUser: User) : Promise<vscode.QuickPickI
 		}
 	}`;
 	const variables = {
-		developerId: currentUser.id
+		developerId: currentUser.getID()
 	};
 
 	var data = await request(SERVERURL, query, variables);
@@ -63,7 +89,7 @@ export async function getProducts(currentUser: User) : Promise<vscode.QuickPickI
 	return products;
 }
 
-export async function createProduct(currentUser: User): Promise<number> {
+export async function createProduct(currentUser: Developer): Promise<number> {
 	if(!currentUser.isLoggedIn()){
 		vscode.window.showInformationMessage('You must be logged in to create a new product');
 		return -1;
@@ -136,7 +162,7 @@ export async function createProduct(currentUser: User): Promise<number> {
 
 	const sessionVariables = {
 		now: date,
-		developerId : currentUser.id,
+		developerId : currentUser.getID(),
 		taskId : taskData.taskCreate.id
 	};
 

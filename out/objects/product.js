@@ -11,6 +11,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const graphql_request_1 = require("graphql-request");
 const extension_1 = require("../extension");
+class Product {
+    constructor(name) {
+        this.id = -1;
+        this.name = "";
+        this.name = name;
+    }
+    getID() {
+        return this.id;
+    }
+    setID(id) {
+        this.id = id;
+    }
+    getName() {
+        return this.name;
+    }
+    setName(name) {
+        this.name = name;
+    }
+}
+exports.Product = Product;
 class ProductQuickPickItem {
     constructor(productId, label) {
         this.label = label;
@@ -49,7 +69,7 @@ function getProducts(currentUser) {
 		}
 	}`;
         const variables = {
-            developerId: currentUser.id
+            developerId: currentUser.getID()
         };
         var data = yield graphql_request_1.request(extension_1.SERVERURL, query, variables);
         for (var i = 0; i < data.products.length; i++) {
@@ -126,7 +146,7 @@ function createProduct(currentUser) {
 	}`;
         const sessionVariables = {
             now: date,
-            developerId: currentUser.id,
+            developerId: currentUser.getID(),
             taskId: taskData.taskCreate.id
         };
         if (taskData.taskCreate.id) {

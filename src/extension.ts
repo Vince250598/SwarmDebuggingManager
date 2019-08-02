@@ -1,8 +1,6 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { TaskProvider, TreeTask } from './taskProvider';
-import { logout, openSwarmAccount, createSwarmAccount, User } from './objects/developer';
+import { Developer } from './objects/developer';
 import { getProducts, createProduct, ProductQuickPickItem, chooseProduct } from './objects/product';
 import { endTask, createTask, updateTaskTitle } from './objects/task';
 import { startSession, stopSession } from './objects/session';
@@ -11,7 +9,7 @@ export const SERVERURL = 'http://localhost:8080/graphql?';
 
 var currentlyActiveSessionId: number = -1;
 
-var currentUser = new User(0, '');
+var currentDeveloper = new Developer(0, '');
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -23,7 +21,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	//TODO: find a way to hide function when logged in
 	vscode.commands.registerCommand('extension.swarm-debugging.login', () => {
 		//verify if already logged in
-		login().then(res => {
+		currentDeveloper.login().then(res => {
 			if(res === undefined){
 				return;
 			}
@@ -33,7 +31,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		});
 	});
 	vscode.commands.registerCommand('extension.swarm-debugging.logout', () => {
-		logout(currentUser);
+		currentDeveloper.logout();
 		if(currentlyActiveSessionId > 0){
 			stopSession(currentlyActiveSessionId);
 		}
@@ -41,17 +39,17 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 	vscode.commands.registerCommand('extension.swarm-debugging.createProduct', () => {
 		//only works if logged in
-		createProduct(currentUser).then(res => {
+		createProduct(currentDeveloper).then(res => {
 			if(res > 0){
 				taskProvider.updateProductId(res);
 			}
 		});
 	});
 	vscode.commands.registerCommand('extension.swarm-debugging.createTask', () => {
-		createTask(taskProvider.getProductID(), currentUser).then(() => taskProvider.refresh());
+		createTask(taskProvider.getProductID(), currentDeveloper).then(() => taskProvider.refresh());
 	});
 	vscode.commands.registerCommand('extension.swarm-debugging.startSession', (task: TreeTask) => {
-		startSession(task.taskId, currentlyActiveSessionId, currentUser.id).then((res) => {
+		startSession(task.taskId, currentlyActiveSessionId, currentDeveloper.getID()).then((res) => {
 			if(res > 0){
 				currentlyActiveSessionId = res;
 				vscode.window.showInformationMessage('started a session');
@@ -75,10 +73,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	vscode.commands.registerCommand('extension.swarm-debugging.chooseProduct', () => {
-		if(!currentUser.isLoggedIn()){
+		if(!currentDeveloper.isLoggedIn()){
 			vscode.window.showInformationMessage('You must be logged in to choose a product');
 		} else {
-			chooseProduct(currentUser).then(res => {
+			chooseProduct(currentDeveloper).then(res => {
 				if(res === undefined){
 					return;
 				}
@@ -99,9 +97,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 }
 
-async function login() {
+/*async function login() {
 	//should a new account be logged in when created?
-	if(currentUser.isLoggedIn()){
+	if(currentDeveloper.isLoggedIn()){
 		vscode.window.showInformationMessage('Logout before logging in');
 		return -4;
 	}
@@ -109,7 +107,7 @@ async function login() {
 	const account = await vscode.window.showQuickPick(['existing account', 'create an account'], {placeHolder: 'Do you have a Swarm Debugging account?'});
 	if(account === 'create an account'){
 		//create a new account before login in
-		let res = await createSwarmAccount();
+		let res = await currentDeveloper.createSwarmAccount();
 		if(res === undefined){
 			return -5;
 		}
@@ -117,15 +115,16 @@ async function login() {
 		return -6;
 	}
 
+	//should not be called when after creating an account
 	let res = await openSwarmAccount(currentUser);
 	if(res < 1) {
 		return -3;
 	}
 
 	return await chooseProduct(currentUser);
-}
+}*/
 
 export function deactivate() {
 	//stop currently active sessions on logout
-	logout(currentUser);
+	currentDeveloper.logout();
 }
