@@ -11,7 +11,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const graphql_request_1 = require("graphql-request");
 const extension_1 = require("../extension");
-const product_1 = require("./product");
 class Developer {
     constructor(id, username) {
         this.id = id;
@@ -136,7 +135,7 @@ class Developer {
                     return -3;
                 }
             }
-            return yield product_1.chooseProduct(this);
+            return yield chooseProduct(this);
         });
     }
 }

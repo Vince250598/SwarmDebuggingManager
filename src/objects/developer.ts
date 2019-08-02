@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { request } from 'graphql-request';
 import { SERVERURL } from '../extension';
-import { chooseProduct } from './product';
+import { Product } from './product';
 
 export class Developer {
 

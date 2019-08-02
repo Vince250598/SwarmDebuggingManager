@@ -1,6 +1,6 @@
 import * as vs from 'vscode';
 import * as fs from 'fs';
-import { Type } from './Type';
+import { Type } from './type';
 
 export class Breakpoint {
 
