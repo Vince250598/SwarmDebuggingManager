@@ -12,7 +12,7 @@ export class TaskService {
         this.task = task;
     }
 
-    setProduct(task: Task) {
+    setTask(task: Task) {
         this.task = task;
     }
 
@@ -64,7 +64,12 @@ export class TaskService {
         }
     }
 
-    async createTask(productID: number, currentUser: Developer) {
+    async createTask(currentUser: Developer) {
+
+        var productID: number = 0;
+        if (this.task) {
+            productID = this.task.getProduct().getID();
+        }
 
         if (productID < 1) {
             vscode.window.showInformationMessage('No product selected');
@@ -80,7 +85,7 @@ export class TaskService {
             return;
         } else if (!taskName) {
             vscode.window.showInformationMessage('The task name must be valid');
-            await this.createTask(productID, currentUser);
+            await this.createTask(currentUser);
             return;
         }
 
@@ -103,6 +108,8 @@ export class TaskService {
 
         let data = await request(SERVERURL, query, variables);
         //add verifications and confirmations
+
+        return data.taskCreate.product.id;
     }
 
 }

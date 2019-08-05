@@ -10,14 +10,14 @@ export class TaskProvider implements vscode.TreeDataProvider<TreeTask> {
 	private productID: number; //manage -1, -2 productsID errors
 	private logged: boolean;
 
-	constructor(private context: vscode.ExtensionContext, productID: number){this.productID = productID; this.logged = false;}
+	constructor(private context: vscode.ExtensionContext, productID: number) { this.productID = productID; this.logged = false; }
 
-    public async getChildren(task?: TreeTask): Promise<TreeTask[]> {
-		
+	public async getChildren(task?: TreeTask): Promise<TreeTask[]> {
+
 		let treeTasks = getTasks(this.productID);
 
 		return treeTasks;
-    }
+	}
 
 	getTreeItem(task: TreeTask): vscode.TreeItem {
 		return task;
@@ -56,7 +56,7 @@ async function getTasks(productId: number) {
 		}
 	}`;
 	const variables = {
-		productId : productId
+		productId: productId
 	};
 
 	var data = await request(SERVERURL, query, variables);
@@ -64,9 +64,9 @@ async function getTasks(productId: number) {
 
 	let tasks: TreeTask[] = [];
 
-	for(let i = 0; i < data.tasksActive.length; i++) {
-		tasks[i] = new TreeTask(data.tasksActive[i].url, data.tasksActive[i].id, 
-			 data.tasksActive[i].title, vscode.TreeItemCollapsibleState.None);
+	for (let i = 0; i < data.tasksActive.length; i++) {
+		tasks[i] = new TreeTask(data.tasksActive[i].url, data.tasksActive[i].id,
+			data.tasksActive[i].title, vscode.TreeItemCollapsibleState.None);
 	}
 
 	return tasks;
@@ -77,23 +77,23 @@ export class TreeTask extends vscode.TreeItem {
 	url: string;
 	taskId: number;
 
-    constructor(
+	constructor(
 		url: string,
 		taskId: number,
-        label: string,
-        collapsibleState: vscode.TreeItemCollapsibleState
-    ) {
-        super(label, collapsibleState);
+		label: string,
+		collapsibleState: vscode.TreeItemCollapsibleState
+	) {
+		super(label, collapsibleState);
 		this.url = url;
 		this.taskId = taskId;
 	}
-	
+
 	contextValue = 'task';
 
 }
 
 function fetchTasks(developerID: number): any {
-    
+
 	const query = `query tasks($id: Long){
 		tasksActive(developerId: $id) {
 			title,
@@ -105,8 +105,8 @@ function fetchTasks(developerID: number): any {
 	};
 
 	request(SERVERURL, query, variables).then(data => {
-		if(!data){
-			vscode.window.showErrorMessage("Error while fetching tasks"); 
+		if (!data) {
+			vscode.window.showErrorMessage("Error while fetching tasks");
 		}
 		return data;
 	});

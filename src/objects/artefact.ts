@@ -41,5 +41,5 @@ export class Artefact {
             return false;
         }
     }
-    
+
 }

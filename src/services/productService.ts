@@ -46,12 +46,9 @@ export class ProductService {
             return -1;
         }
 
-        var productName = await vscode.window.showInputBox({ prompt: 'Enter the product name' });
-        //add verification product attributes
-        if (productName === undefined) {
-            return -2;
-        } else if (!productName) {
-            return await this.createProduct(currentUser);
+        let productName: String = "";
+        if (this.product) {
+            productName = this.product.getName();
         }
 
         const productQuery = `mutation createProduct($productName: String!) {
@@ -119,8 +116,9 @@ export class ProductService {
 
         if (taskData.taskCreate.id) {
             var sessionData = await request(SERVERURL, sessionQuery, sessionVariables);
-            if (sessionData.sessionCreate.id && productData.productCreate.id) {
-                return new Product(productData.productCreate.id, productName);
+            if (sessionData.sessionStart.id && productData.productCreate.id) {
+                return Number(productData.productCreate.id);
+                //return new Product(productData.productCreate.id, productName);
             }
         }
         return -1;

@@ -20,8 +20,14 @@ export class SessionService {
         this.session = session;
     }
 
-    async stopSession(currentlyActiveSessionId: number) {
+    async stopSession() {
 
+        var currentlyActiveSessionId: number;
+        if (this.session) {
+            currentlyActiveSessionId = this.session.getID();
+        } else {
+            currentlyActiveSessionId = 0;
+        }
         //Is this the right place for this message?
         if (currentlyActiveSessionId < 1) {
             vscode.window.showInformationMessage('No session active');
@@ -45,20 +51,27 @@ export class SessionService {
         return data.sessionUpdate.id;
     }
 
-    async startSession(taskId: number, currentlyActiveSessionId: number, currentUserId: number): Promise<number> {
+    async startSession(): Promise<number> {
+        if (this.session) {
+            var taskId = this.session.getTask().getID();
+            var currentlyActiveSessionId = this.session.getID();
+            var currentUserId = this.session.getDeveloper().getID();
+            var sessionDescription = this.session.getDescription();
+        } else {
+            return -1;
+        }
+
         if (currentlyActiveSessionId > 0) {
-            vscode.window.showInformationMessage('a session is already active');
+            vscode.window.showInformationMessage('A session is already active');
             return 0;
         }
 
         //project and label attributes?
 
-        var sessionDescription = await vscode.window.showInputBox({ prompt: 'Enter a description for the session you want to start' });
-
         if (sessionDescription === undefined) {
             return -1;
         } else if (!sessionDescription) {
-            return await this.startSession(taskId, currentlyActiveSessionId, currentUserId);
+            return await this.startSession();
         }
 
         //needs developerid and taskid
