@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { TaskProvider, TreeTask } from './taskProvider';
 import { Developer } from './objects/developer';
 import { Product } from './objects/product';
@@ -9,6 +10,7 @@ import { ProductService } from './services/productService';
 import { TaskService } from './services/taskService';
 import { Session } from './objects/session';
 import { Task } from './objects/task';
+import { BreakpointService } from 'services/breakpointService';
 
 export const SERVERURL = 'http://localhost:8080/graphql?';
 
@@ -155,6 +157,18 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	vscode.commands.registerCommand('extension.swarmSession.toggleBreakpoints', () => {
+		if (currentlyActiveTask.getID() > 1) {
+			if (currentlyActiveSession.getID()) {
+				toggleBreakpoints(currentlyActiveSession);
+			} else {
+				vscode.window.showInformationMessage('There is no session active.');
+			}
+		} else {
+			vscode.window.showInformationMessage('There is no task selected.');
+		}
+	});
+
 }
 
 export function deactivate() {
@@ -174,4 +188,39 @@ function clearSet() {
 function clearSession() {
 	currentlyActiveSession = new Session("", new Date(), "", "", "", currenttlyActiveDeveloper, currentlyActiveTask);
 	currentlyActiveSession.setID(-1);
+}
+
+export async function toggleBreakpoints(session: Session) {
+
+	let breakpointService = new BreakpointService();
+	let allBreakpointsPast = await breakpointService.getAll(session);
+
+	let breakpoints: vscode.Breakpoint[] = [];
+
+	for (var i = 0; i < allBreakpointsPast.length; i++) {
+
+		let artefactSourceLines = allBreakpointsPast[i].getType().getArtefact().getSourceCode().split("\n");
+		let actualFile = fs.readFileSync(allBreakpointsPast[i].getType().getFullPath(), 'utf8');
+		let actualSourceLines = actualFile.split("\n");
+
+		let oldLine = artefactSourceLines[allBreakpointsPast[i].getLineNumber()];
+		let actualLine = actualSourceLines[allBreakpointsPast[i].getLineNumber()];
+
+		if (oldLine === actualLine) {
+
+			//@ts-ignore
+			let uri = new vscode.Uri("file", "", allBreakpointsPast[i].getType().getFullPath(), "", "");
+			let range = new vscode.Range(allBreakpointsPast[i].getLineNumber(), 0, allBreakpointsPast[i].getLineNumber(), 0);
+			let location = new vscode.Location(uri, range);
+			let breakpointVS = new vscode.SourceBreakpoint(location, true);
+
+			breakpoints[i] = breakpointVS as vscode.Breakpoint;
+
+		}
+
+	}
+
+	vscode.debug.addBreakpoints(breakpoints);
+
+	return true;
 }

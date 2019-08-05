@@ -99,6 +99,10 @@
 					"light": "media/edit-icon-light.png",
 					"dark": "media/edit-icon-dark.png"
 				}
+			},
+			{
+				"command": "extension.swarm-debugging.toggleBreakpoints",
+				"title": "Swarm Debugging: Toggle Breakpoints"
 			}
 		],
 		"menus": {

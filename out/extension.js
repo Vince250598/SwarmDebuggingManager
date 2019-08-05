@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
+const fs = require("fs");
 const taskProvider_1 = require("./taskProvider");
 const developer_1 = require("./objects/developer");
 const product_1 = require("./objects/product");
@@ -19,6 +20,7 @@ const productService_1 = require("./services/productService");
 const taskService_1 = require("./services/taskService");
 const session_1 = require("./objects/session");
 const task_1 = require("./objects/task");
+const breakpointService_1 = require("services/breakpointService");
 exports.SERVERURL = 'http://localhost:8080/graphql?';
 var currentlyActiveSessionId;
 var currentlyActiveProduct;
@@ -137,6 +139,19 @@ function activate(context) {
                 });
             }
         });
+        vscode.commands.registerCommand('extension.swarmSession.toggleBreakpoints', () => {
+            if (currentlyActiveTask.getID() > 1) {
+                if (currentlyActiveSession.getID()) {
+                    toggleBreakpoints(currentlyActiveSession);
+                }
+                else {
+                    vscode.window.showInformationMessage('There is no session active.');
+                }
+            }
+            else {
+                vscode.window.showInformationMessage('There is no task selected.');
+            }
+        });
     });
 }
 exports.activate = activate;
@@ -157,4 +172,29 @@ function clearSession() {
     currentlyActiveSession = new session_1.Session("", new Date(), "", "", "", currenttlyActiveDeveloper, currentlyActiveTask);
     currentlyActiveSession.setID(-1);
 }
+function toggleBreakpoints(session) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let breakpointService = new breakpointService_1.BreakpointService();
+        let allBreakpointsPast = yield breakpointService.getAll(session);
+        let breakpoints = [];
+        for (var i = 0; i < allBreakpointsPast.length; i++) {
+            let artefactSourceLines = allBreakpointsPast[i].getType().getArtefact().getSourceCode().split("\n");
+            let actualFile = fs.readFileSync(allBreakpointsPast[i].getType().getFullPath(), 'utf8');
+            let actualSourceLines = actualFile.split("\n");
+            let oldLine = artefactSourceLines[allBreakpointsPast[i].getLineNumber()];
+            let actualLine = actualSourceLines[allBreakpointsPast[i].getLineNumber()];
+            if (oldLine === actualLine) {
+                //@ts-ignore
+                let uri = new vscode.Uri("file", "", allBreakpointsPast[i].getType().getFullPath(), "", "");
+                let range = new vscode.Range(allBreakpointsPast[i].getLineNumber(), 0, allBreakpointsPast[i].getLineNumber(), 0);
+                let location = new vscode.Location(uri, range);
+                let breakpointVS = new vscode.SourceBreakpoint(location, true);
+                breakpoints[i] = breakpointVS;
+            }
+        }
+        vscode.debug.addBreakpoints(breakpoints);
+        return true;
+    });
+}
+exports.toggleBreakpoints = toggleBreakpoints;
 //# sourceMappingURL=extension.js.map
