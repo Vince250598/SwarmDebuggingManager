@@ -2,92 +2,65 @@ import * as vscode from 'vscode';
 import { request } from 'graphql-request';
 import { Developer } from './developer';
 import { SERVERURL } from '../extension';
+import { Product } from './product';
 
-export async function updateTaskTitle(taskId: number): Promise<number> {
+export class Task {
 
-	const title = await vscode.window.showInputBox({prompt: "Enter new title for selected task"});
+    private id: number = -1;
+    private color: string = "000000";
+    private title: string = "";
+    private url: string = "";
+    private product: Product;
 
-	if(title === undefined){
-		return -1;
-	} else if(!title) {
-		vscode.window.showInformationMessage('new title must be valid');
-		return await updateTaskTitle(taskId);
-	}
+    constructor(color: string,
+        title: string,
+        url: string,
+        product: Product) {
 
-	const query = `mutation taskUpdateTitle($taskId: Long!, $title: String!){
-		taskUpdate(taskId: $taskId, title: $title){
-			id
-		}
-	}`;
+        this.color = color;
+        this.title = title;
+        this.url = url;
+        this.product = product;
+    }
 
-	const variables = {
-		taskId: taskId,
-		title: title
-	};
+    getID() {
+        return this.id;
+    }
 
-	let data = await request(SERVERURL, query, variables);
-	return 1;
-}
+    setID(id: number) {
+        this.id = id;
+    }
 
-export async function endTask(taskId: number) {
+    getColor() {
+        return this.color;
+    }
 
-	//can a developer end a task while in a debugging session?
+    setColor(color: string) {
+        this.color = color;
+    }
 
-	const query = `mutation taskDone($taskId: Long!) {
-		taskDone(taskId: $taskId){
-			done
-		}
-	}`;
+    getTitle() {
+        return this.title;
+    }
 
-	const variables = {
-		taskId : taskId
-	};
+    setTitle(title: string) {
+        this.title = title;
+    }
 
-	let data = await request(SERVERURL, query, variables);
+    getURL() {
+        return this.url;
+    }
 
-	if(data.taskDone.done === true){
-		vscode.window.showInformationMessage('Task marked as done');
-		return taskId;
-	}
-}
+    setURL(url: string) {
+        this.url = url;
+    }
 
-export async function createTask(productID: number, currentUser: Developer) {
+    getProduct() {
+        return this.product;
+    }
 
-	if(productID < 1){
-		vscode.window.showInformationMessage('No product selected');
-		return -1;
-	} else if(!currentUser.isLoggedIn()){
-		vscode.window.showInformationMessage('You must be logged in to create a new task');
-		return -2;
-	}
+    setProduct(product: Product) {
+        this.product = this.product;
+    }
 
-	let taskName = await vscode.window.showInputBox({prompt:'Enter the name of the new task'});
-
-	if(taskName === undefined) {
-		return;
-	}else if(!taskName) {
-		vscode.window.showInformationMessage('The task name must be valid');
-		await createTask(productID, currentUser);
-		return;
-	}
-
-	const query = `mutation taskCreate($taskName: String!, $productId: Long!) {
-		taskCreate(task: {
-			title: $taskName
-			done: false
-			product: {
-				id: $productId
-			}
-		}) {
-			id
-		}
-	}`;
-
-	const variables = {
-		taskName: taskName,
-		productId: productID
-	};
-
-	let data = await request(SERVERURL, query, variables);
-	//add verifications and confirmations
 }

@@ -84,4 +84,5 @@ export class Type {
             return false;
         }
     }
+    
 }
