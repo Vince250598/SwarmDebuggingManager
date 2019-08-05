@@ -34,7 +34,6 @@ export class TypeService {
                 $typeName: String, 
                 $typeFullName: String, 
                 $typeFullPath: String, 
-                $namespaceId: Long,
                 $sessionId: Long,
                 $inputSource: String) {
                 typeCreate(typeWrapper: {

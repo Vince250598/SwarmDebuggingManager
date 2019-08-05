@@ -20,7 +20,11 @@ const productService_1 = require("./services/productService");
 const taskService_1 = require("./services/taskService");
 const session_1 = require("./objects/session");
 const task_1 = require("./objects/task");
-const breakpointService_1 = require("services/breakpointService");
+const breakpointService_1 = require("./services/breakpointService");
+const artefact_1 = require("./objects/artefact");
+const type_1 = require("./objects/type");
+const breakpoint_1 = require("./objects/breakpoint");
+const typeService_1 = require("./services/typeService");
 exports.SERVERURL = 'http://localhost:8080/graphql?';
 var currentlyActiveSessionId;
 var currentlyActiveProduct;
@@ -139,7 +143,7 @@ function activate(context) {
                 });
             }
         });
-        vscode.commands.registerCommand('extension.swarmSession.toggleBreakpoints', () => {
+        vscode.commands.registerCommand('extension.swarm-debugging.toggleBreakpoints', () => {
             if (currentlyActiveTask.getID() > 1) {
                 if (currentlyActiveSession.getID()) {
                     toggleBreakpoints(currentlyActiveSession);
@@ -152,6 +156,84 @@ function activate(context) {
                 vscode.window.showInformationMessage('There is no task selected.');
             }
         });
+        var isFirstTime = true;
+        var allBreakpointsActual;
+        var allBreakpointsPast;
+        vscode.debug.onDidChangeBreakpoints((event) => __awaiter(this, void 0, void 0, function* () {
+            if (currentlyActiveSession.getID() > 0) {
+                let breakpointService = new breakpointService_1.BreakpointService();
+                // Management of past and present states of breakpoints
+                if (isFirstTime) {
+                    allBreakpointsActual = vscode.debug.breakpoints;
+                    allBreakpointsPast = yield breakpointService.getAll(currentlyActiveSession);
+                }
+                else {
+                    allBreakpointsPast = allBreakpointsActual;
+                    allBreakpointsActual = vscode.debug.breakpoints;
+                }
+                let shouldCreateBreakpoint;
+                // The logic is simple, compare all the past and present breakpoints,
+                // find which ones are new and them add them to the database
+                // There are some special treatment for the firstime, because in the
+                // first time the past state is equivalent to the breakpoints from 
+                // the database(Breakpoint not vscode.Breakpoint)
+                for (var i = 0; i < allBreakpointsActual.length; i++) {
+                    shouldCreateBreakpoint = true;
+                    for (var j = 0; j < allBreakpointsPast.length; j++) {
+                        if (isFirstTime) {
+                            if (allBreakpointsPast[j].equalsVSBreakpoint(allBreakpointsActual[i])) {
+                                shouldCreateBreakpoint = false;
+                                break;
+                            }
+                        }
+                        else {
+                            if (allBreakpointsPast[j] === allBreakpointsActual[i]) {
+                                shouldCreateBreakpoint = false;
+                                break;
+                            }
+                        }
+                    }
+                    // If the breakpoint is found new, it is added to database
+                    if (shouldCreateBreakpoint) {
+                        let breakpoint = allBreakpointsActual[i];
+                        let swarmArtefact = new artefact_1.Artefact(fs.readFileSync(breakpoint.location.uri.fsPath, 'utf8'));
+                        let fullname = "";
+                        if (vscode.workspace.rootPath) {
+                            fullname = getTypeFullname(vscode.workspace.rootPath, breakpoint.location.uri.fsPath);
+                        }
+                        let swarmType = new type_1.Type(fullname, breakpoint.location.uri.fsPath, fromPathToTypeName(breakpoint.location.uri.fsPath), swarmArtefact, currentlyActiveSession);
+                        let swarmBreakpoint = new breakpoint_1.Breakpoint(breakpoint.location.range.start.line, swarmType);
+                        // Before creating a type, it is needed to verify if it is already in the database
+                        let typeService = new typeService_1.TypeService();
+                        let createdTypes = yield typeService.getAllBySession(currentlyActiveSession);
+                        let shouldCreate = true;
+                        for (let item of createdTypes) {
+                            if (swarmType.equals(item)) {
+                                swarmType.setID(item.getID());
+                                shouldCreate = false;
+                                break;
+                            }
+                        }
+                        if (shouldCreate) {
+                            typeService.setArtefact(swarmArtefact);
+                            typeService.setType(swarmType);
+                            let response = yield typeService.create();
+                            if (response) {
+                                createdTypes[createdTypes.length - 1] = swarmType;
+                            }
+                        }
+                        let breakpointService = new breakpointService_1.BreakpointService(swarmBreakpoint);
+                        let response = yield breakpointService.create();
+                        if (response) {
+                            console.log("Breakpoint added!");
+                        }
+                    }
+                    if (isFirstTime) {
+                        isFirstTime = false;
+                    }
+                }
+            }
+        }));
     });
 }
 exports.activate = activate;
@@ -171,6 +253,24 @@ function clearSet() {
 function clearSession() {
     currentlyActiveSession = new session_1.Session("", new Date(), "", "", "", currenttlyActiveDeveloper, currentlyActiveTask);
     currentlyActiveSession.setID(-1);
+}
+function fromPathToTypeName(path) {
+    let splittedPath = path.split("/");
+    return splittedPath[splittedPath.length - 1].split(".", 1)[0];
+}
+function getTypeFullname(rootPath, filePath) {
+    let splittedRootPath = rootPath.split("/");
+    let splittedFilePath = filePath.split("/");
+    let fullname = "";
+    for (let i = splittedRootPath.length + 1; i < splittedFilePath.length; i++) {
+        if (i === splittedRootPath.length + 1) {
+            fullname = splittedFilePath[i];
+        }
+        else {
+            fullname = fullname + "." + splittedFilePath[i];
+        }
+    }
+    return fullname;
 }
 function toggleBreakpoints(session) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -196,5 +296,4 @@ function toggleBreakpoints(session) {
         return true;
     });
 }
-exports.toggleBreakpoints = toggleBreakpoints;
 //# sourceMappingURL=extension.js.map
