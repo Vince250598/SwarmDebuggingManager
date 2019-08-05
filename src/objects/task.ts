@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { request } from 'graphql-request';
-import { User } from './developer';
+import { Developer } from './developer';
 import { SERVERURL } from '../extension';
 
 export async function updateTaskTitle(taskId: number): Promise<number> {
@@ -51,7 +51,7 @@ export async function endTask(taskId: number) {
 	}
 }
 
-export async function createTask(productID: number, currentUser: User) {
+export async function createTask(productID: number, currentUser: Developer) {
 
 	if(productID < 1){
 		vscode.window.showInformationMessage('No product selected');

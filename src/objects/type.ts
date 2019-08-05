@@ -1,6 +1,6 @@
 import * as vs from 'vscode';
-import { Artefact } from './Artefact';
-import { Session } from './Session';
+import { Artefact } from './artefact';
+import { Session } from './session';
 
 export class Type {
 
