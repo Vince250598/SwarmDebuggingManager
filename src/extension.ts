@@ -161,7 +161,8 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	vscode.commands.registerCommand('extension.swarm-debugging.toggleBreakpoints', () => {
+	vscode.commands.registerCommand('extension.swarm-debugging.toggleBreakpoints', (task: TreeTask) => {
+		currentlyActiveTask.setID(task.taskId);
 		if (currentlyActiveTask.getID() > 1) {
 				toggleBreakpoints(currentlyActiveTask);
 		} else {

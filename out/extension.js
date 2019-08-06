@@ -143,7 +143,8 @@ function activate(context) {
                 });
             }
         });
-        vscode.commands.registerCommand('extension.swarm-debugging.toggleBreakpoints', () => {
+        vscode.commands.registerCommand('extension.swarm-debugging.toggleBreakpoints', (task) => {
+            currentlyActiveTask.setID(task.taskId);
             if (currentlyActiveTask.getID() > 1) {
                 toggleBreakpoints(currentlyActiveTask);
             }

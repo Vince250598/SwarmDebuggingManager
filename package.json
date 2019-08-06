@@ -102,7 +102,11 @@
 			},
 			{
 				"command": "extension.swarm-debugging.toggleBreakpoints",
-				"title": "Swarm Debugging: Toggle Breakpoints"
+				"title": "Swarm Debugging: Toggle Breakpoints",
+				"icon": {
+					"light": "media/toggle-light.png",
+					"dark": "media/toggle-dark.png"
+				}
 			}
 		],
 		"menus": {
@@ -152,6 +156,11 @@
 				},
 				{
 					"command": "extension.swarm-debugging.updateTaskTitle",
+					"when": "view == taskView && viewItem == task",
+					"group": "inline"
+				},
+				{
+					"command": "extension.swarm-debugging.toggleBreakpoints",
 					"when": "view == taskView && viewItem == task",
 					"group": "inline"
 				}
