@@ -145,12 +145,7 @@ function activate(context) {
         });
         vscode.commands.registerCommand('extension.swarm-debugging.toggleBreakpoints', () => {
             if (currentlyActiveTask.getID() > 1) {
-                if (currentlyActiveSession.getID()) {
-                    toggleBreakpoints(currentlyActiveSession);
-                }
-                else {
-                    vscode.window.showInformationMessage('There is no session active.');
-                }
+                toggleBreakpoints(currentlyActiveTask);
             }
             else {
                 vscode.window.showInformationMessage('There is no task selected.');
@@ -165,7 +160,7 @@ function activate(context) {
                 // Management of past and present states of breakpoints
                 if (isFirstTime) {
                     allBreakpointsActual = vscode.debug.breakpoints;
-                    allBreakpointsPast = yield breakpointService.getAll(currentlyActiveSession);
+                    allBreakpointsPast = yield breakpointService.getAll(currentlyActiveTask);
                 }
                 else {
                     allBreakpointsPast = allBreakpointsActual;
@@ -272,10 +267,10 @@ function getTypeFullname(rootPath, filePath) {
     }
     return fullname;
 }
-function toggleBreakpoints(session) {
+function toggleBreakpoints(task) {
     return __awaiter(this, void 0, void 0, function* () {
         let breakpointService = new breakpointService_1.BreakpointService();
-        let allBreakpointsPast = yield breakpointService.getAll(session);
+        let allBreakpointsPast = yield breakpointService.getAll(task);
         let breakpoints = [];
         for (var i = 0; i < allBreakpointsPast.length; i++) {
             let artefactSourceLines = allBreakpointsPast[i].getType().getArtefact().getSourceCode().split("\n");

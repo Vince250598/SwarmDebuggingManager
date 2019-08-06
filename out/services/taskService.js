@@ -99,7 +99,7 @@ class TaskService {
             };
             let data = yield graphql_request_1.request(extension_1.SERVERURL, query, variables);
             //add verifications and confirmations
-            return data.taskCreate.product.id;
+            return data.taskCreate.id;
         });
     }
 }

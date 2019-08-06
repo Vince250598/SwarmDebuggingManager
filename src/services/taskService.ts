@@ -109,7 +109,7 @@ export class TaskService {
         let data = await request(SERVERURL, query, variables);
         //add verifications and confirmations
 
-        return data.taskCreate.product.id;
+        return data.taskCreate.id;
     }
 
 }

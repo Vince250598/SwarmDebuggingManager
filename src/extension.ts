@@ -163,11 +163,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	vscode.commands.registerCommand('extension.swarm-debugging.toggleBreakpoints', () => {
 		if (currentlyActiveTask.getID() > 1) {
-			if (currentlyActiveSession.getID()) {
-				toggleBreakpoints(currentlyActiveSession);
-			} else {
-				vscode.window.showInformationMessage('There is no session active.');
-			}
+				toggleBreakpoints(currentlyActiveTask);
 		} else {
 			vscode.window.showInformationMessage('There is no task selected.');
 		}
@@ -186,7 +182,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			// Management of past and present states of breakpoints
 			if (isFirstTime) {
 				allBreakpointsActual = vscode.debug.breakpoints;
-				allBreakpointsPast = await breakpointService.getAll(currentlyActiveSession);
+				allBreakpointsPast = await breakpointService.getAll(currentlyActiveTask);
 			} else {
 				allBreakpointsPast = allBreakpointsActual;
 				allBreakpointsActual = vscode.debug.breakpoints;
@@ -320,10 +316,10 @@ function getTypeFullname(rootPath: string, filePath: string) {
 
 }
 
-async function toggleBreakpoints(session: Session) {
+async function toggleBreakpoints(task: Task) {
 
 	let breakpointService = new BreakpointService();
-	let allBreakpointsPast = await breakpointService.getAll(session);
+	let allBreakpointsPast = await breakpointService.getAll(task);
 
 	let breakpoints: vscode.Breakpoint[] = [];
 

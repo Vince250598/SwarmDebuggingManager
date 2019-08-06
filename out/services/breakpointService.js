@@ -52,7 +52,7 @@ class BreakpointService {
             }
         });
     }
-    getAll(session) {
+    getAll(task) {
         return __awaiter(this, void 0, void 0, function* () {
             const query = `query breakpoint($taskId: Long){
             breakpoint(taskId: $taskId) {
@@ -93,7 +93,7 @@ class BreakpointService {
             }
         }`;
             const variables = {
-                taskId: session.getTask().getID()
+                taskId: task.getID()
             };
             var data = yield graphql_request_1.request(extension_1.SERVERURL, query, variables);
             var answer = [];

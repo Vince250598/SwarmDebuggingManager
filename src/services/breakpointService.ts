@@ -55,7 +55,7 @@ export class BreakpointService {
 
     }
 
-    async getAll(session: Session) {
+    async getAll(task: Task) {
 
         const query = `query breakpoint($taskId: Long){
             breakpoint(taskId: $taskId) {
@@ -97,7 +97,7 @@ export class BreakpointService {
         }`;
 
         const variables = {
-            taskId: session.getTask().getID()
+            taskId: task.getID()
         };
 
         var data = await request(SERVERURL, query, variables);
