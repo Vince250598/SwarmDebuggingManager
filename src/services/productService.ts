@@ -16,6 +16,23 @@ export class ProductService {
         this.product = product;
     }
 
+    async chooseProduct(currentUser: Developer) {
+
+		const products: ProductQuickPickItem[] = await this.getProducts(currentUser);
+		if (products.length === 0) {
+			vscode.window.showInformationMessage('You are not working on any products, create a new product to start debugging!'); //would you like to create a new product?
+			return -2;
+		} else {
+			var chosenProduct = await vscode.window.showQuickPick(products, { placeHolder: 'Which Product would you like to work on?' });
+		}
+		if (chosenProduct) {
+			return chosenProduct.productId; //label = ID
+		} else {
+			vscode.window.showInformationMessage('No product Chosen');
+			return -3;
+		}
+	}
+
     async getProducts(currentUser: Developer): Promise<vscode.QuickPickItem[]> {
         //Look into multiple graphql queries in one request
         const products: ProductQuickPickItem[] = [];

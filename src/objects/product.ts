@@ -31,25 +31,6 @@ export class Product {
 	setName(name: string) {
 		this.name = name;
 	}
-
-	//should function be static?
-	static async chooseProduct(currentUser: Developer, productService: ProductService) {
-
-		const products: ProductQuickPickItem[] = await productService.getProducts(currentUser);
-		if (products.length === 0) {
-			vscode.window.showInformationMessage('You are not working on any products, create a new product to start debugging!'); //would you like to create a new product?
-			return -2;
-		} else {
-			var chosenProduct = await vscode.window.showQuickPick(products, { placeHolder: 'Which Product would you like to work on?' });
-		}
-		if (chosenProduct) {
-			return chosenProduct.productId; //label = ID
-		} else {
-			vscode.window.showInformationMessage('No product Chosen');
-			return -3;
-		}
-	}
-
 }
 
 export class ProductQuickPickItem implements vscode.QuickPickItem {

@@ -18,30 +18,28 @@ import { TypeService } from './services/typeService';
 
 export const SERVERURL = 'http://localhost:8080/graphql?';
 
-var currentlyActiveSessionId: number;
-var currentlyActiveProduct: Product;
-var currentlyActiveTask: Task;
-var currenttlyActiveDeveloper: Developer;
-var currentlyActiveSession: Session;
+var currentlyActiveProduct: Product = new Product(0, "");
+var currentlyActiveTask: Task = new Task("", "", "", currentlyActiveProduct);
+var currentlyActiveDeveloper: Developer = new Developer(0, '');
+var currentlyActiveSession: Session = new Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
 clearSet();
+
+var sessionService = new SessionService(currentlyActiveSession);
+var productService = new ProductService(currentlyActiveProduct);
+var taskService = new TaskService(currentlyActiveTask);
 
 export async function activate(context: vscode.ExtensionContext) {
 
 	console.log('SwarmAccountManager is now active');
-	let sessionService = new SessionService(currentlyActiveSession);
-	let productService = new ProductService(currentlyActiveProduct);
-	let taskService = new TaskService(currentlyActiveTask);
 
-	const taskProvider = new TaskProvider(context, -1); //ajouter le cas -1
+	const taskProvider = new TaskProvider(context, -1); //add -1 case
 
 	vscode.window.registerTreeDataProvider('taskView', taskProvider);
 
 	vscode.commands.registerCommand('extension.swarm-debugging.refreshTasks', () => { taskProvider.refresh(); });
 
-	//TODO: find a way to hide function when logged in
 	vscode.commands.registerCommand('extension.swarm-debugging.login', () => {
-		//verify if already logged in
-		currenttlyActiveDeveloper.login().then(res => {
+		currentlyActiveDeveloper.login().then(res => {
 			if (res === undefined) {
 				return;
 			}
@@ -52,8 +50,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.commands.registerCommand('extension.swarm-debugging.logout', () => {
-		currenttlyActiveDeveloper.logout();
-		if (currentlyActiveSessionId > 0) {
+		currentlyActiveDeveloper.logout();
+		if (currentlyActiveSession.getID() > 0) {
 			sessionService.stopSession();
 		}
 		taskProvider.updateProductId(0);
@@ -63,14 +61,17 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	vscode.commands.registerCommand('extension.swarm-debugging.createProduct', async () => {
 		var productName = undefined;
-		while (productName === undefined) {
+		while (productName === "") {
 			productName = await vscode.window.showInputBox({ prompt: 'Enter the product name' });
+		}
+		if(productName === undefined){
+			return;
 		}
 
 		currentlyActiveProduct = new Product(taskProvider.getProductID(), productName);
 
 		productService.setProduct(currentlyActiveProduct);
-		productService.createProduct(currenttlyActiveDeveloper).then((res: number) => {
+		productService.createProduct(currentlyActiveDeveloper).then((res: number) => {
 			if (res > 0) {
 				taskProvider.updateProductId(res);
 				currentlyActiveProduct.setID(res);
@@ -81,7 +82,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('extension.swarm-debugging.createTask', () => {
 		currentlyActiveTask = new Task("000000", "", "", currentlyActiveProduct);
 		taskService.setTask(currentlyActiveTask);
-		taskService.createTask(currenttlyActiveDeveloper).then((res: number) => {
+		taskService.createTask(currentlyActiveDeveloper).then((res: number) => {
 			currentlyActiveTask.setID(res);
 			taskProvider.refresh();
 		});
@@ -89,9 +90,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	vscode.commands.registerCommand('extension.swarm-debugging.startSession', async (task: TreeTask) => {
 
-		var sessionDescription = await vscode.window.showInputBox({ prompt: 'Enter a description for the session you want to start' });
-		if (!sessionDescription) {
-			sessionDescription = "";
+		while(!sessionDescription){
+			var sessionDescription = await vscode.window.showInputBox({ prompt: 'Enter a description for the session you want to start' });
+		}
+		if (sessionDescription === undefined) {
+			return;
 		}
 
 		currentlyActiveTask.setID(task.taskId);
@@ -101,15 +104,13 @@ export async function activate(context: vscode.ExtensionContext) {
 			"",
 			"",
 			"",
-			currenttlyActiveDeveloper,
+			currentlyActiveDeveloper,
 			currentlyActiveTask);
-		currentlyActiveSession.setID(currentlyActiveSessionId);
 
 		sessionService.setSession(currentlyActiveSession);
 		sessionService.startSession().then((res: number) => {
 			if (res > 0) {
 				currentlyActiveSession.setID(res);
-				//currentlyActiveSessionId = res;
 				vscode.window.showInformationMessage('started a session');
 			}
 		});
@@ -118,7 +119,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('extension.swarm-debugging.stopSession', () => {
 		sessionService.stopSession().then((res: number) => {
 			if (res > 0) {
-				currentlyActiveSessionId = -1;
 				clearSession();
 				vscode.window.showInformationMessage('Stopped session');
 			}
@@ -126,8 +126,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.commands.registerCommand('extension.swarm-debugging.endTask', (task: TreeTask) => {
-		//task active verification
-		if (currentlyActiveSessionId < 1) {
+		if (currentlyActiveSession.getID() < 1) {
 			taskService.endTask(task.taskId).then(() => {
 				taskProvider.refresh();
 			});
@@ -135,10 +134,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.commands.registerCommand('extension.swarm-debugging.chooseProduct', () => {
-		if (!currenttlyActiveDeveloper.isLoggedIn()) {
+		if (!currentlyActiveDeveloper.isLoggedIn()) {
 			vscode.window.showInformationMessage('You must be logged in to choose a product');
 		} else {
-			Product.chooseProduct(currenttlyActiveDeveloper, productService).then((res: number | undefined) => {
+			productService.chooseProduct(currentlyActiveDeveloper).then((res: number | undefined) => {
 				if (res === undefined) {
 					return;
 				}
@@ -152,7 +151,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.commands.registerCommand('extension.swarm-debugging.updateTaskTitle', (task: TreeTask) => {
-		if (currentlyActiveSessionId < 1) {
+		if (currentlyActiveSession.getID() < 1) {
 			taskService.updateTaskTitle(task.taskId).then((res: number) => {
 				if (res !== -1) {
 					taskProvider.refresh();
@@ -274,21 +273,21 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
 	//stop currently active sessions on logout
-	currenttlyActiveDeveloper.logout();
+	currentlyActiveDeveloper.logout();
 }
 
 function clearSet() {
-	currentlyActiveSessionId = -1;
 	currentlyActiveProduct = new Product(0, "");
 	currentlyActiveTask = new Task("", "", "", currentlyActiveProduct);
-	currenttlyActiveDeveloper = new Developer(0, '');
-	currentlyActiveSession = new Session("", new Date(), "", "", "", currenttlyActiveDeveloper, currentlyActiveTask);
+	currentlyActiveDeveloper = new Developer(0, '');
+	currentlyActiveSession = new Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
 	currentlyActiveSession.setID(-1);
 }
 
 function clearSession() {
-	currentlyActiveSession = new Session("", new Date(), "", "", "", currenttlyActiveDeveloper, currentlyActiveTask);
+	currentlyActiveSession = new Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
 	currentlyActiveSession.setID(-1);
+	sessionService.setSession(currentlyActiveSession);
 }
 
 function fromPathToTypeName(path: string) {
