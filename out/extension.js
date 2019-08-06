@@ -13,8 +13,6 @@ const fs = require("fs");
 const taskProvider_1 = require("./taskProvider");
 const developer_1 = require("./objects/developer");
 const product_1 = require("./objects/product");
-//import { getProducts, createProduct, ProductQuickPickItem, chooseProduct } from './objects/product';
-//import { endTask, createTask, updateTaskTitle } from './objects/task';
 const sessionService_1 = require("./services/sessionService");
 const productService_1 = require("./services/productService");
 const taskService_1 = require("./services/taskService");
@@ -30,7 +28,6 @@ var currentlyActiveProduct = new product_1.Product(0, "");
 var currentlyActiveTask = new task_1.Task("", "", "", currentlyActiveProduct);
 var currentlyActiveDeveloper = new developer_1.Developer(0, '');
 var currentlyActiveSession = new session_1.Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
-clearSet();
 var sessionService = new sessionService_1.SessionService(currentlyActiveSession);
 var productService = new productService_1.ProductService(currentlyActiveProduct);
 var taskService = new taskService_1.TaskService(currentlyActiveTask);
@@ -46,7 +43,8 @@ function activate(context) {
                     return;
                 }
                 if (res > 0) {
-                    taskProvider.updateProductId(res);
+                    currentlyActiveProduct.setID(res);
+                    taskProvider.updateProductId(currentlyActiveProduct.getID());
                 }
             });
         });

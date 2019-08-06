@@ -1,12 +1,7 @@
 import * as vscode from 'vscode';
 import { request } from 'graphql-request';
 import { SERVERURL } from '../extension';
-import { Type } from '../objects/type';
-import { Artefact } from '../objects/artefact';
-import { Product } from '../objects/product';
-import { Task } from '../objects/task';
 import { Session } from '../objects/session';
-import { Developer } from '../objects/developer';
 
 export class SessionService {
 

@@ -108,8 +108,10 @@ export class DeveloperService {
 			}
 		}
 
+		let productService = new ProductService(new Product(-1, "name"));
+
 		if (this.developer) {
-			return await Product.chooseProduct(this.developer, new ProductService());
+			return await productService.chooseProduct(this.developer);
 		}
 
 	}

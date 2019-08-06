@@ -3,8 +3,6 @@ import * as fs from 'fs';
 import { TaskProvider, TreeTask } from './taskProvider';
 import { Developer } from './objects/developer';
 import { Product } from './objects/product';
-//import { getProducts, createProduct, ProductQuickPickItem, chooseProduct } from './objects/product';
-//import { endTask, createTask, updateTaskTitle } from './objects/task';
 import { SessionService } from './services/sessionService';
 import { ProductService } from './services/productService';
 import { TaskService } from './services/taskService';
@@ -22,11 +20,10 @@ var currentlyActiveProduct: Product = new Product(0, "");
 var currentlyActiveTask: Task = new Task("", "", "", currentlyActiveProduct);
 var currentlyActiveDeveloper: Developer = new Developer(0, '');
 var currentlyActiveSession: Session = new Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
-clearSet();
 
 var sessionService = new SessionService(currentlyActiveSession);
 var productService = new ProductService(currentlyActiveProduct);
-var taskService = new TaskService(currentlyActiveTask);
+var taskService: TaskService = new TaskService(currentlyActiveTask);
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -44,7 +41,8 @@ export async function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 			if (res > 0) {
-				taskProvider.updateProductId(res);
+				currentlyActiveProduct.setID(res);
+				taskProvider.updateProductId(currentlyActiveProduct.getID());
 			}
 		});
 	});

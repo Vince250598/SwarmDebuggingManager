@@ -111,8 +111,9 @@ class DeveloperService {
                     return -3;
                 }
             }
+            let productService = new productService_1.ProductService(new product_1.Product(-1, "name"));
             if (this.developer) {
-                return yield product_1.Product.chooseProduct(this.developer, new productService_1.ProductService());
+                return yield productService.chooseProduct(this.developer);
             }
         });
     }

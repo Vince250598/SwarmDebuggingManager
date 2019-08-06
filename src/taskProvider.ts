@@ -1,16 +1,15 @@
 import * as vscode from 'vscode';
 import { request } from 'graphql-request';
-import { SERVERURL } from './extension';
+import { SERVERURL } from 'extension';
 
 export class TaskProvider implements vscode.TreeDataProvider<TreeTask> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<TreeTask | undefined> = new vscode.EventEmitter<TreeTask | undefined>();
 	readonly onDidChangeTreeData: vscode.Event<TreeTask | undefined> = this._onDidChangeTreeData.event;
 
-	private productID: number; //manage -1, -2 productsID errors
-	private logged: boolean;
+	private productID: number; //manage -1, -2 productsID errors?
 
-	constructor(private context: vscode.ExtensionContext, productID: number) { this.productID = productID; this.logged = false; }
+	constructor(private context: vscode.ExtensionContext, productID: number) { this.productID = productID; }
 
 	public async getChildren(task?: TreeTask): Promise<TreeTask[]> {
 
@@ -39,11 +38,6 @@ export class TaskProvider implements vscode.TreeDataProvider<TreeTask> {
 		this.setProductID(productID);
 		this.refresh();
 	}
-
-	setLogged(logged: boolean) {
-		this.logged = logged;
-	}
-
 }
 
 async function getTasks(productId: number) {
@@ -92,7 +86,7 @@ export class TreeTask extends vscode.TreeItem {
 
 }
 
-function fetchTasks(developerID: number): any {
+/*function fetchTasks(developerID: number): any {
 
 	const query = `query tasks($id: Long){
 		tasksActive(developerId: $id) {
@@ -110,4 +104,4 @@ function fetchTasks(developerID: number): any {
 		}
 		return data;
 	});
-}
+}*/
