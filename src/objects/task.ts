@@ -7,9 +7,9 @@ import { Product } from './product';
 export class Task {
 
     private id: number = -1;
-    private color: string = "000000";
-    private title: string = "";
-    private url: string = "";
+    private color: string;
+    private title: string;
+    private url: string;
     private product: Product;
 
     constructor(color: string,
@@ -62,5 +62,4 @@ export class Task {
     setProduct(product: Product) {
         this.product = this.product;
     }
-
 }

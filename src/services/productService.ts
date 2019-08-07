@@ -24,10 +24,13 @@ export class ProductService {
 			return -2;
 		} else {
 			var chosenProduct = await vscode.window.showQuickPick(products, { placeHolder: 'Which Product would you like to work on?' });
-		}
-		if (chosenProduct) {
-			return chosenProduct.productId; //label = ID
-		} else {
+        }
+        if(chosenProduct !== undefined){
+		    if (chosenProduct.productId !== undefined && chosenProduct.label !== undefined) {
+                return new Product(chosenProduct.productId, chosenProduct.label);
+			    //return chosenProduct.productId; //label = ID
+            }
+        } else {
 			vscode.window.showInformationMessage('No product Chosen');
 			return -3;
 		}
@@ -57,17 +60,24 @@ export class ProductService {
         return products;
     }
 
-    async createProduct(currentUser: Developer): Promise<any> {
+    async createProduct(currentUser: Developer) {
         if (!currentUser.isLoggedIn()) {
             vscode.window.showInformationMessage('You must be logged in to create a new product');
             return -1;
         }
 
-        let productName: String = "";
-        if (this.product) {
-            productName = this.product.getName();
+        if(!this.product){
+            return -1;
         }
 
+        var productName: string | undefined = "";
+		while (productName === "") {
+			productName = await vscode.window.showInputBox({ prompt: 'Enter the product name' });
+		}
+		if(productName === undefined){
+			return -1;
+        }
+        
         const productQuery = `mutation createProduct($productName: String!) {
 			productCreate(product: {
 				name: $productName
@@ -81,8 +91,6 @@ export class ProductService {
         };
 
         var productData = await request(SERVERURL, productQuery, productVariables);
-
-        //id exists verification
 
         //delete this task when a real task is entered to keep link between developer and product
         const taskQuery = `mutation taskCreate($productId: Long!) {
@@ -131,11 +139,12 @@ export class ProductService {
             taskId: taskData.taskCreate.id
         };
 
+        //add sessionCreate verification?
         if (taskData.taskCreate.id) {
             var sessionData = await request(SERVERURL, sessionQuery, sessionVariables);
             if (sessionData.sessionStart.id && productData.productCreate.id) {
-                return Number(productData.productCreate.id);
-                //return new Product(productData.productCreate.id, productName);
+                //return Number(productData.productCreate.id);
+                return new Product(productData.productCreate.id, productName);
             }
         }
         return -1;

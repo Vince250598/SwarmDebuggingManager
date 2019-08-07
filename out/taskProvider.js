@@ -12,12 +12,10 @@ const vscode = require("vscode");
 const graphql_request_1 = require("graphql-request");
 const extension_1 = require("./extension");
 class TaskProvider {
-    constructor(context, productID) {
-        this.context = context;
+    constructor(productID) {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this.productID = productID;
-        this.logged = false;
     }
     getChildren(task) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -40,9 +38,6 @@ class TaskProvider {
     updateProductId(productID) {
         this.setProductID(productID);
         this.refresh();
-    }
-    setLogged(logged) {
-        this.logged = logged;
     }
 }
 exports.TaskProvider = TaskProvider;
@@ -76,21 +71,4 @@ class TreeTask extends vscode.TreeItem {
     }
 }
 exports.TreeTask = TreeTask;
-function fetchTasks(developerID) {
-    const query = `query tasks($id: Long){
-		tasksActive(developerId: $id) {
-			title,
-			url
-		}
-	}`;
-    const variables = {
-        id: developerID
-    };
-    graphql_request_1.request(extension_1.SERVERURL, query, variables).then(data => {
-        if (!data) {
-            vscode.window.showErrorMessage("Error while fetching tasks");
-        }
-        return data;
-    });
-}
 //# sourceMappingURL=taskProvider.js.map

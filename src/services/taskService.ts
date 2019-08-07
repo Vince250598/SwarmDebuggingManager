@@ -3,6 +3,7 @@ import { request } from 'graphql-request';
 import { SERVERURL } from '../extension';
 import { Task } from '../objects/task';
 import { Developer } from '../objects/developer';
+import { Product } from 'objects/product';
 
 export class TaskService {
 
@@ -64,29 +65,23 @@ export class TaskService {
         }
     }
 
-    async createTask(currentUser: Developer) {
+    async createTask(currentUser: Developer, currentProduct: Product) {
 
-        var productID: number = 0;
-        if (this.task) {
-            productID = this.task.getProduct().getID();
-        }
-
-        if (productID < 1) {
+        if (currentProduct.getID() < 1) {
             vscode.window.showInformationMessage('No product selected');
             return -1;
         } else if (!currentUser.isLoggedIn()) {
             vscode.window.showInformationMessage('You must be logged in to create a new task');
             return -2;
         }
-
-        let taskName = await vscode.window.showInputBox({ prompt: 'Enter the name of the new task' });
+    
+        var taskName: string | undefined = "";
+        while(taskName === "") {
+            taskName = await vscode.window.showInputBox({ prompt: 'Enter the name of the new task' });
+        }
 
         if (taskName === undefined) {
-            return;
-        } else if (!taskName) {
-            vscode.window.showInformationMessage('The task name must be valid');
-            await this.createTask(currentUser);
-            return;
+            return -3;
         }
 
         const query = `mutation taskCreate($taskName: String!, $productId: Long!) {
@@ -103,13 +98,14 @@ export class TaskService {
 
         const variables = {
             taskName: taskName,
-            productId: productID
+            productId: currentProduct.getID()
         };
 
         let data = await request(SERVERURL, query, variables);
-        //add verifications and confirmations
 
-        return data.taskCreate.id;
+        if(data.taskCreate.id){
+            return 1;
+        }
+        return -4;
     }
-
 }

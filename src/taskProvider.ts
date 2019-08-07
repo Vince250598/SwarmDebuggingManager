@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { request } from 'graphql-request';
-import { SERVERURL } from 'extension';
+import { SERVERURL } from './extension';
 
 export class TaskProvider implements vscode.TreeDataProvider<TreeTask> {
 
@@ -9,7 +9,7 @@ export class TaskProvider implements vscode.TreeDataProvider<TreeTask> {
 
 	private productID: number; //manage -1, -2 productsID errors?
 
-	constructor(private context: vscode.ExtensionContext, productID: number) { this.productID = productID; }
+	constructor(productID: number) { this.productID = productID; }
 
 	public async getChildren(task?: TreeTask): Promise<TreeTask[]> {
 
@@ -85,23 +85,3 @@ export class TreeTask extends vscode.TreeItem {
 	contextValue = 'task';
 
 }
-
-/*function fetchTasks(developerID: number): any {
-
-	const query = `query tasks($id: Long){
-		tasksActive(developerId: $id) {
-			title,
-			url
-		}
-	}`;
-	const variables = {
-		id: developerID
-	};
-
-	request(SERVERURL, query, variables).then(data => {
-		if (!data) {
-			vscode.window.showErrorMessage("Error while fetching tasks");
-		}
-		return data;
-	});
-}*/

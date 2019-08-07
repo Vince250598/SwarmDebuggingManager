@@ -25,11 +25,11 @@ var sessionService = new SessionService(currentlyActiveSession);
 var productService = new ProductService(currentlyActiveProduct);
 var taskService: TaskService = new TaskService(currentlyActiveTask);
 
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate() {
 
 	console.log('SwarmAccountManager is now active');
 
-	const taskProvider = new TaskProvider(context, -1); //add -1 case
+	const taskProvider = new TaskProvider(-1); //add -1 case
 
 	vscode.window.registerTreeDataProvider('taskView', taskProvider);
 
@@ -37,52 +37,47 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	vscode.commands.registerCommand('extension.swarm-debugging.login', () => {
 		currentlyActiveDeveloper.login().then(res => {
-			if (res === undefined) {
-				return;
+			if (res === undefined || typeof res === "number") {
+				return res;
 			}
-			if (res > 0) {
-				currentlyActiveProduct.setID(res);
+			else if (typeof res === "object") {
+				currentlyActiveProduct.setID(res.getID());
+				currentlyActiveProduct.setName(res.getName());
 				taskProvider.updateProductId(currentlyActiveProduct.getID());
 			}
 		});
 	});
 
 	vscode.commands.registerCommand('extension.swarm-debugging.logout', () => {
-		currentlyActiveDeveloper.logout();
-		if (currentlyActiveSession.getID() > 0) {
-			sessionService.stopSession();
+		let res = currentlyActiveDeveloper.logout();
+		if(res > 0) {
+			if (currentlyActiveSession.getID() > 0) {
+				sessionService.stopSession();
+			}
+			clearSet();
+			taskProvider.updateProductId(currentlyActiveProduct.getID());
 		}
-		taskProvider.updateProductId(0);
-		clearSet();
-
 	});
 
 	vscode.commands.registerCommand('extension.swarm-debugging.createProduct', async () => {
-		var productName = undefined;
-		while (productName === "") {
-			productName = await vscode.window.showInputBox({ prompt: 'Enter the product name' });
-		}
-		if(productName === undefined){
-			return;
-		}
-
-		currentlyActiveProduct = new Product(taskProvider.getProductID(), productName);
-
-		productService.setProduct(currentlyActiveProduct);
-		productService.createProduct(currentlyActiveDeveloper).then((res: number) => {
-			if (res > 0) {
-				taskProvider.updateProductId(res);
-				currentlyActiveProduct.setID(res);
+		productService.createProduct(currentlyActiveDeveloper).then((res) => {
+			if(typeof res === "number"){
+				return;
+			}else if (typeof res === "object") {
+				currentlyActiveProduct.setID(res.getID());
+				currentlyActiveProduct.setName(res.getName());
+				taskProvider.updateProductId(currentlyActiveProduct.getID());
 			}
 		});
 	});
 
 	vscode.commands.registerCommand('extension.swarm-debugging.createTask', () => {
-		currentlyActiveTask = new Task("000000", "", "", currentlyActiveProduct);
-		taskService.setTask(currentlyActiveTask);
-		taskService.createTask(currentlyActiveDeveloper).then((res: number) => {
-			currentlyActiveTask.setID(res);
-			taskProvider.refresh();
+		taskService.createTask(currentlyActiveDeveloper, currentlyActiveProduct).then((res: number) => {
+			if(res > 0){
+				taskProvider.refresh();
+			} else if(res < 0) {
+				return;
+			}
 		});
 	});
 
@@ -135,13 +130,14 @@ export async function activate(context: vscode.ExtensionContext) {
 		if (!currentlyActiveDeveloper.isLoggedIn()) {
 			vscode.window.showInformationMessage('You must be logged in to choose a product');
 		} else {
-			productService.chooseProduct(currentlyActiveDeveloper).then((res: number | undefined) => {
-				if (res === undefined) {
-					return;
+			productService.chooseProduct(currentlyActiveDeveloper).then((res) => {
+				if (res === undefined || typeof res === "number") {
+					return res;
 				}
-				if (res > 0) {
-					taskProvider.updateProductId(res);
-					currentlyActiveProduct.setID(res);
+				if (typeof res === "object") {
+					currentlyActiveProduct.setID(res.getID());
+					currentlyActiveProduct.setName(res.getName());
+					taskProvider.updateProductId(currentlyActiveProduct.getID());
 					taskProvider.refresh();
 				}
 			});
@@ -279,12 +275,14 @@ function clearSet() {
 	currentlyActiveTask = new Task("", "", "", currentlyActiveProduct);
 	currentlyActiveDeveloper = new Developer(0, '');
 	currentlyActiveSession = new Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
-	currentlyActiveSession.setID(-1);
+
+	sessionService = new SessionService(currentlyActiveSession);
+ 	productService = new ProductService(currentlyActiveProduct);
+ 	taskService = new TaskService(currentlyActiveTask);
 }
 
 function clearSession() {
 	currentlyActiveSession = new Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
-	currentlyActiveSession.setID(-1);
 	sessionService.setSession(currentlyActiveSession);
 }
 

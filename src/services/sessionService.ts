@@ -16,15 +16,12 @@ export class SessionService {
     }
 
     async stopSession() {
-
-        var currentlyActiveSessionId: number;
-        if (this.session) {
-            currentlyActiveSessionId = this.session.getID();
-        } else {
-            currentlyActiveSessionId = 0;
+        if(this.session === undefined) {
+            return;
         }
+
         //Is this the right place for this message?
-        if (currentlyActiveSessionId < 1) {
+        if (this.session.getID() < 1) {
             vscode.window.showInformationMessage('No session active');
             return 0;
         }
@@ -38,7 +35,7 @@ export class SessionService {
         let date = new Date().toISOString();
 
         const variables = {
-            sessionId: currentlyActiveSessionId,
+            sessionId: this.session.getID(),
             finished: date
         };
 

@@ -4,11 +4,7 @@ class Session {
     constructor(description, started, label, project, purpose, developer, task) {
         this.id = -1;
         this.description = "";
-        this.started = new Date();
         this.finished = new Date();
-        this.label = "";
-        this.project = "";
-        this.purpose = "";
         this.description = description;
         this.started = started;
         this.label = label;

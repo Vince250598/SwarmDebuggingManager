@@ -3,9 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 class Task {
     constructor(color, title, url, product) {
         this.id = -1;
-        this.color = "000000";
-        this.title = "";
-        this.url = "";
         this.color = color;
         this.title = title;
         this.url = url;

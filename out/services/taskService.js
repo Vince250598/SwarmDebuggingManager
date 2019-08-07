@@ -59,13 +59,9 @@ class TaskService {
             }
         });
     }
-    createTask(currentUser) {
+    createTask(currentUser, currentProduct) {
         return __awaiter(this, void 0, void 0, function* () {
-            var productID = 0;
-            if (this.task) {
-                productID = this.task.getProduct().getID();
-            }
-            if (productID < 1) {
+            if (currentProduct.getID() < 1) {
                 vscode.window.showInformationMessage('No product selected');
                 return -1;
             }
@@ -73,14 +69,12 @@ class TaskService {
                 vscode.window.showInformationMessage('You must be logged in to create a new task');
                 return -2;
             }
-            let taskName = yield vscode.window.showInputBox({ prompt: 'Enter the name of the new task' });
-            if (taskName === undefined) {
-                return;
+            var taskName = "";
+            while (taskName === "") {
+                taskName = yield vscode.window.showInputBox({ prompt: 'Enter the name of the new task' });
             }
-            else if (!taskName) {
-                vscode.window.showInformationMessage('The task name must be valid');
-                yield this.createTask(currentUser);
-                return;
+            if (taskName === undefined) {
+                return -3;
             }
             const query = `mutation taskCreate($taskName: String!, $productId: Long!) {
             taskCreate(task: {
@@ -95,11 +89,13 @@ class TaskService {
         }`;
             const variables = {
                 taskName: taskName,
-                productId: productID
+                productId: currentProduct.getID()
             };
             let data = yield graphql_request_1.request(extension_1.SERVERURL, query, variables);
-            //add verifications and confirmations
-            return data.taskCreate.id;
+            if (data.taskCreate.id) {
+                return 1;
+            }
+            return -4;
         });
     }
 }

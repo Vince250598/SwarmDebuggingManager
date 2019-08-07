@@ -5,11 +5,11 @@ export class Session {
 
     private id: number = -1;
     private description: string = "";
-    private started: Date = new Date();
+    private started: Date;
     private finished: Date = new Date();
-    private label: string = "";
-    private project: string = "";
-    private purpose: string = "";
+    private label: string;
+    private project: string;
+    private purpose: string;
     private developer: Developer;
     private task: Task;
 

@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const graphql_request_1 = require("graphql-request");
 const extension_1 = require("../extension");
+const product_1 = require("../objects/product");
 class ProductService {
     constructor(product) {
         this.product = product;
@@ -28,8 +29,11 @@ class ProductService {
             else {
                 var chosenProduct = yield vscode.window.showQuickPick(products, { placeHolder: 'Which Product would you like to work on?' });
             }
-            if (chosenProduct) {
-                return chosenProduct.productId; //label = ID
+            if (chosenProduct !== undefined) {
+                if (chosenProduct.productId !== undefined && chosenProduct.label !== undefined) {
+                    return new product_1.Product(chosenProduct.productId, chosenProduct.label);
+                    //return chosenProduct.productId; //label = ID
+                }
             }
             else {
                 vscode.window.showInformationMessage('No product Chosen');
@@ -66,9 +70,15 @@ class ProductService {
                 vscode.window.showInformationMessage('You must be logged in to create a new product');
                 return -1;
             }
-            let productName = "";
-            if (this.product) {
-                productName = this.product.getName();
+            if (!this.product) {
+                return -1;
+            }
+            var productName = "";
+            while (productName === "") {
+                productName = yield vscode.window.showInputBox({ prompt: 'Enter the product name' });
+            }
+            if (productName === undefined) {
+                return -1;
             }
             const productQuery = `mutation createProduct($productName: String!) {
 			productCreate(product: {
@@ -81,7 +91,6 @@ class ProductService {
                 productName: productName
             };
             var productData = yield graphql_request_1.request(extension_1.SERVERURL, productQuery, productVariables);
-            //id exists verification
             //delete this task when a real task is entered to keep link between developer and product
             const taskQuery = `mutation taskCreate($productId: Long!) {
 			taskCreate(task: {
@@ -123,11 +132,12 @@ class ProductService {
                 developerId: currentUser.getID(),
                 taskId: taskData.taskCreate.id
             };
+            //add sessionCreate verification?
             if (taskData.taskCreate.id) {
                 var sessionData = yield graphql_request_1.request(extension_1.SERVERURL, sessionQuery, sessionVariables);
                 if (sessionData.sessionStart.id && productData.productCreate.id) {
-                    return Number(productData.productCreate.id);
-                    //return new Product(productData.productCreate.id, productName);
+                    //return Number(productData.productCreate.id);
+                    return new product_1.Product(productData.productCreate.id, productName);
                 }
             }
             return -1;

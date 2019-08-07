@@ -31,54 +31,54 @@ var currentlyActiveSession = new session_1.Session("", new Date(), "", "", "", c
 var sessionService = new sessionService_1.SessionService(currentlyActiveSession);
 var productService = new productService_1.ProductService(currentlyActiveProduct);
 var taskService = new taskService_1.TaskService(currentlyActiveTask);
-function activate(context) {
+function activate() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('SwarmAccountManager is now active');
-        const taskProvider = new taskProvider_1.TaskProvider(context, -1); //add -1 case
+        const taskProvider = new taskProvider_1.TaskProvider(-1); //add -1 case
         vscode.window.registerTreeDataProvider('taskView', taskProvider);
         vscode.commands.registerCommand('extension.swarm-debugging.refreshTasks', () => { taskProvider.refresh(); });
         vscode.commands.registerCommand('extension.swarm-debugging.login', () => {
             currentlyActiveDeveloper.login().then(res => {
-                if (res === undefined) {
-                    return;
+                if (res === undefined || typeof res === "number") {
+                    return res;
                 }
-                if (res > 0) {
-                    currentlyActiveProduct.setID(res);
+                else if (typeof res === "object") {
+                    currentlyActiveProduct.setID(res.getID());
+                    currentlyActiveProduct.setName(res.getName());
                     taskProvider.updateProductId(currentlyActiveProduct.getID());
                 }
             });
         });
         vscode.commands.registerCommand('extension.swarm-debugging.logout', () => {
-            currentlyActiveDeveloper.logout();
-            if (currentlyActiveSession.getID() > 0) {
-                sessionService.stopSession();
+            let res = currentlyActiveDeveloper.logout();
+            if (res > 0) {
+                if (currentlyActiveSession.getID() > 0) {
+                    sessionService.stopSession();
+                }
+                clearSet();
+                taskProvider.updateProductId(currentlyActiveProduct.getID());
             }
-            taskProvider.updateProductId(0);
-            clearSet();
         });
         vscode.commands.registerCommand('extension.swarm-debugging.createProduct', () => __awaiter(this, void 0, void 0, function* () {
-            var productName = undefined;
-            while (productName === "") {
-                productName = yield vscode.window.showInputBox({ prompt: 'Enter the product name' });
-            }
-            if (productName === undefined) {
-                return;
-            }
-            currentlyActiveProduct = new product_1.Product(taskProvider.getProductID(), productName);
-            productService.setProduct(currentlyActiveProduct);
             productService.createProduct(currentlyActiveDeveloper).then((res) => {
-                if (res > 0) {
-                    taskProvider.updateProductId(res);
-                    currentlyActiveProduct.setID(res);
+                if (typeof res === "number") {
+                    return;
+                }
+                else if (typeof res === "object") {
+                    currentlyActiveProduct.setID(res.getID());
+                    currentlyActiveProduct.setName(res.getName());
+                    taskProvider.updateProductId(currentlyActiveProduct.getID());
                 }
             });
         }));
         vscode.commands.registerCommand('extension.swarm-debugging.createTask', () => {
-            currentlyActiveTask = new task_1.Task("000000", "", "", currentlyActiveProduct);
-            taskService.setTask(currentlyActiveTask);
-            taskService.createTask(currentlyActiveDeveloper).then((res) => {
-                currentlyActiveTask.setID(res);
-                taskProvider.refresh();
+            taskService.createTask(currentlyActiveDeveloper, currentlyActiveProduct).then((res) => {
+                if (res > 0) {
+                    taskProvider.refresh();
+                }
+                else if (res < 0) {
+                    return;
+                }
             });
         });
         vscode.commands.registerCommand('extension.swarm-debugging.startSession', (task) => __awaiter(this, void 0, void 0, function* () {
@@ -119,12 +119,13 @@ function activate(context) {
             }
             else {
                 productService.chooseProduct(currentlyActiveDeveloper).then((res) => {
-                    if (res === undefined) {
-                        return;
+                    if (res === undefined || typeof res === "number") {
+                        return res;
                     }
-                    if (res > 0) {
-                        taskProvider.updateProductId(res);
-                        currentlyActiveProduct.setID(res);
+                    if (typeof res === "object") {
+                        currentlyActiveProduct.setID(res.getID());
+                        currentlyActiveProduct.setName(res.getName());
+                        taskProvider.updateProductId(currentlyActiveProduct.getID());
                         taskProvider.refresh();
                     }
                 });
@@ -239,11 +240,12 @@ function clearSet() {
     currentlyActiveTask = new task_1.Task("", "", "", currentlyActiveProduct);
     currentlyActiveDeveloper = new developer_1.Developer(0, '');
     currentlyActiveSession = new session_1.Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
-    currentlyActiveSession.setID(-1);
+    sessionService = new sessionService_1.SessionService(currentlyActiveSession);
+    productService = new productService_1.ProductService(currentlyActiveProduct);
+    taskService = new taskService_1.TaskService(currentlyActiveTask);
 }
 function clearSession() {
     currentlyActiveSession = new session_1.Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
-    currentlyActiveSession.setID(-1);
     sessionService.setSession(currentlyActiveSession);
 }
 function fromPathToTypeName(path) {

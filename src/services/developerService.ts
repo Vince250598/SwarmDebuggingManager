@@ -83,7 +83,6 @@ export class DeveloperService {
 	}
 
 	async login() {
-		//should a new account be logged in when created?
 		if (this.developer) {
 			if (this.developer.isLoggedIn()) {
 				vscode.window.showInformationMessage('Logout before logging in');
@@ -113,7 +112,5 @@ export class DeveloperService {
 		if (this.developer) {
 			return await productService.chooseProduct(this.developer);
 		}
-
 	}
-
 }

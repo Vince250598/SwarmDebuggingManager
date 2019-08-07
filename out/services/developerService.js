@@ -87,7 +87,6 @@ class DeveloperService {
     }
     login() {
         return __awaiter(this, void 0, void 0, function* () {
-            //should a new account be logged in when created?
             if (this.developer) {
                 if (this.developer.isLoggedIn()) {
                     vscode.window.showInformationMessage('Logout before logging in');

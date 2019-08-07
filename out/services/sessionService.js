@@ -20,15 +20,11 @@ class SessionService {
     }
     stopSession() {
         return __awaiter(this, void 0, void 0, function* () {
-            var currentlyActiveSessionId;
-            if (this.session) {
-                currentlyActiveSessionId = this.session.getID();
-            }
-            else {
-                currentlyActiveSessionId = 0;
+            if (this.session === undefined) {
+                return;
             }
             //Is this the right place for this message?
-            if (currentlyActiveSessionId < 1) {
+            if (this.session.getID() < 1) {
                 vscode.window.showInformationMessage('No session active');
                 return 0;
             }
@@ -39,7 +35,7 @@ class SessionService {
             }`;
             let date = new Date().toISOString();
             const variables = {
-                sessionId: currentlyActiveSessionId,
+                sessionId: this.session.getID(),
                 finished: date
             };
             let data = yield graphql_request_1.request(extension_1.SERVERURL, query, variables);

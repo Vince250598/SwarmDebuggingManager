@@ -26,11 +26,13 @@ class Developer {
     logout() {
         if (!this.isLoggedIn()) {
             vscode.window.showInformationMessage('You are not logged in');
+            return -1;
         }
         else {
             this.setID(0);
             this.setUsername('');
             vscode.window.showInformationMessage('You are now logged out');
+            return 1;
         }
     }
     isLoggedIn() {
