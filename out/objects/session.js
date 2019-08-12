@@ -5,6 +5,7 @@ class Session {
         this.id = -1;
         this.description = "";
         this.finished = new Date();
+        this.vscodeSession = "";
         this.description = description;
         this.started = started;
         this.label = label;
@@ -66,6 +67,12 @@ class Session {
     }
     setTask(task) {
         this.task = task;
+    }
+    getVscodeSession() {
+        return this.vscodeSession;
+    }
+    setVscodeSession(vscodeSession) {
+        this.vscodeSession = vscodeSession;
     }
 }
 exports.Session = Session;

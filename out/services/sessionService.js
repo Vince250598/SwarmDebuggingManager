@@ -25,7 +25,7 @@ class SessionService {
             }
             //Is this the right place for this message?
             if (this.session.getID() < 1) {
-                vscode.window.showInformationMessage('No session active');
+                vscode.window.showInformationMessage("No session active");
                 return 0;
             }
             const query = `mutation sessionUpdate($sessionId: Long!, $finished: Date) {
@@ -54,7 +54,7 @@ class SessionService {
                 return -1;
             }
             if (currentlyActiveSessionId > 0) {
-                vscode.window.showInformationMessage('A session is already active');
+                vscode.window.showInformationMessage("A session is already active");
                 return 0;
             }
             //project and label attributes?
@@ -90,9 +90,26 @@ class SessionService {
                 return data.sessionStart.id;
             }
             else {
-                vscode.window.showErrorMessage('error while creating session');
+                vscode.window.showErrorMessage("error while creating session");
             }
             return 1;
+        });
+    }
+    updateSession() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.session === undefined) {
+                return;
+            }
+            const query = `mutation sessionUpdate($sessionId: Long!, $vscodeSession: String!) {
+        sessionUpdate(id: $sessionId, vscodeSession: $vscodeSession){
+            id
+        }
+    }`;
+            const variables = {
+                sessionId: this.session.getID(),
+                vscodeSession: this.session.getVscodeSession()
+            };
+            yield graphql_request_1.request(extension_1.SERVERURL, query, variables);
         });
     }
 }

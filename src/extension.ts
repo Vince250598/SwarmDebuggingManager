@@ -263,6 +263,25 @@ export async function activate() {
 
 	});
 
+	vscode.debug.onDidStartDebugSession((e) => {
+		if(currentlyActiveSession.getID() > 0){
+			vscode.window.showInformationMessage('Storing stepping information.');
+			if(vscode.debug.activeDebugSession){
+				currentlyActiveSession.setVscodeSession(vscode.debug.activeDebugSession.id);
+				sessionService.setSession(currentlyActiveSession);
+				sessionService.updateSession();
+			}
+		} else {
+			vscode.window.showInformationMessage('No swarm session active, no stepping information will be stored.');
+		}
+	});
+
+	vscode.debug.onDidTerminateDebugSession((e) => {
+		if(currentlyActiveSession.getID() > 0){
+			vscode.commands.executeCommand('extension.swarm-debugging.stopSession');
+		}
+	});
+
 }
 
 export function deactivate() {

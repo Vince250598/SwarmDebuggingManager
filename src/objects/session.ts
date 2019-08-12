@@ -1,106 +1,114 @@
-import { Developer } from './developer';
-import { Task } from './task';
+import { Developer } from "./developer";
+import { Task } from "./task";
 
 export class Session {
+  private id: number = -1;
+  private description: string = "";
+  private started: Date;
+  private finished: Date = new Date();
+  private label: string;
+  private project: string;
+  private purpose: string;
+  private developer: Developer;
+  private task: Task;
+  private vscodeSession: string = "";
 
-    private id: number = -1;
-    private description: string = "";
-    private started: Date;
-    private finished: Date = new Date();
-    private label: string;
-    private project: string;
-    private purpose: string;
-    private developer: Developer;
-    private task: Task;
+  constructor(
+    description: string,
+    started: Date,
+    label: string,
+    project: string,
+    purpose: string,
+    developer: Developer,
+    task: Task
+  ) {
+    this.description = description;
+    this.started = started;
+    this.label = label;
+    this.project = project;
+    this.purpose = purpose;
+    this.developer = developer;
+    this.task = task;
+  }
 
-    constructor(description: string,
-        started: Date,
-        label: string,
-        project: string,
-        purpose: string,
-        developer: Developer,
-        task: Task) {
+  getID() {
+    return this.id;
+  }
 
-        this.description = description;
-        this.started = started;
-        this.label = label;
-        this.project = project;
-        this.purpose = purpose;
-        this.developer = developer;
-        this.task = task;
+  setID(id: number) {
+    this.id = id;
+  }
 
-    }
+  getDescription() {
+    return this.description;
+  }
 
-    getID() {
-        return this.id;
-    }
+  setDescription(description: string) {
+    this.description = description;
+  }
 
-    setID(id: number) {
-        this.id = id;
-    }
+  getDeveloper() {
+    return this.developer;
+  }
 
-    getDescription() {
-        return this.description;
-    }
+  setDeveloper(developer: Developer) {
+    this.developer = developer;
+  }
 
-    setDescription(description: string) {
-        this.description = description;
-    }
+  getStarted() {
+    return this.started;
+  }
 
-    getDeveloper() {
-        return this.developer;
-    }
+  setStarted(started: Date) {
+    this.started = started;
+  }
 
-    setDeveloper(developer: Developer) {
-        this.developer = developer;
-    }
+  getFinished() {
+    return this.finished;
+  }
 
-    getStarted() {
-        return this.started;
-    }
+  setFinished(finished: Date) {
+    this.finished = finished;
+  }
 
-    setStarted(started: Date) {
-        this.started = started;
-    }
+  getLabel() {
+    return this.label;
+  }
 
-    getFinished() {
-        return this.finished;
-    }
+  setlabel(label: string) {
+    this.label = label;
+  }
 
-    setFinished(finished: Date) {
-        this.finished = finished;
-    }
+  getProject() {
+    return this.project;
+  }
 
-    getLabel() {
-        return this.label;
-    }
+  setProject(project: string) {
+    this.project = project;
+  }
 
-    setlabel(label: string) {
-        this.label = label;
-    }
+  getPurpose() {
+    return this.purpose;
+  }
 
-    getProject() {
-        return this.project;
-    }
+  setPurpose(purpose: string) {
+    this.purpose = purpose;
+  }
 
-    setProject(project: string) {
-        this.project = project;
-    }
+  getTask() {
+    return this.task;
+  }
 
-    getPurpose() {
-        return this.purpose;
-    }
+  setTask(task: Task) {
+    this.task = task;
+  }
 
-    setPurpose(purpose: string) {
-        this.purpose = purpose;
-    }
+  getVscodeSession() {
+    return this.vscodeSession;
+  }
 
-    getTask() {
-        return this.task;
-    }
-
-    setTask(task: Task) {
-        this.task = task;
-    }
-
+  setVscodeSession(vscodeSession: string) {
+    this.vscodeSession = vscodeSession;
+  }
+  
 }
