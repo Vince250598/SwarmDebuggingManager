@@ -24,10 +24,10 @@ const type_1 = require("./objects/type");
 const breakpoint_1 = require("./objects/breakpoint");
 const typeService_1 = require("./services/typeService");
 exports.SERVERURL = 'http://localhost:8080/graphql?';
-var currentlyActiveProduct = new product_1.Product(0, "");
-var currentlyActiveTask = new task_1.Task("", "", "", currentlyActiveProduct);
+var currentlyActiveProduct = new product_1.Product(0, '');
+var currentlyActiveTask = new task_1.Task('', '', '', currentlyActiveProduct);
 var currentlyActiveDeveloper = new developer_1.Developer(0, '');
-var currentlyActiveSession = new session_1.Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
+var currentlyActiveSession = new session_1.Session('', new Date(), '', '', '', currentlyActiveDeveloper, currentlyActiveTask);
 var sessionService = new sessionService_1.SessionService(currentlyActiveSession);
 var productService = new productService_1.ProductService(currentlyActiveProduct);
 var taskService = new taskService_1.TaskService(currentlyActiveTask);
@@ -39,10 +39,10 @@ function activate() {
         vscode.commands.registerCommand('extension.swarm-debugging.refreshTasks', () => { taskProvider.refresh(); });
         vscode.commands.registerCommand('extension.swarm-debugging.login', () => {
             currentlyActiveDeveloper.login().then(res => {
-                if (res === undefined || typeof res === "number") {
+                if (res === undefined || typeof res === 'number') {
                     return res;
                 }
-                else if (typeof res === "object") {
+                else if (typeof res === 'object') {
                     currentlyActiveProduct.setID(res.getID());
                     currentlyActiveProduct.setName(res.getName());
                     taskProvider.updateProductId(currentlyActiveProduct.getID());
@@ -50,6 +50,9 @@ function activate() {
             });
         });
         vscode.commands.registerCommand('extension.swarm-debugging.logout', () => {
+            if (vscode.debug.activeDebugSession !== undefined) {
+                return;
+            }
             let res = currentlyActiveDeveloper.logout();
             if (res > 0) {
                 if (currentlyActiveSession.getID() > 0) {
@@ -61,10 +64,10 @@ function activate() {
         });
         vscode.commands.registerCommand('extension.swarm-debugging.createProduct', () => __awaiter(this, void 0, void 0, function* () {
             productService.createProduct(currentlyActiveDeveloper).then((res) => {
-                if (typeof res === "number") {
+                if (typeof res === 'number') {
                     return;
                 }
-                else if (typeof res === "object") {
+                else if (typeof res === 'object') {
                     currentlyActiveProduct.setID(res.getID());
                     currentlyActiveProduct.setName(res.getName());
                     taskProvider.updateProductId(currentlyActiveProduct.getID());
@@ -82,6 +85,10 @@ function activate() {
             });
         });
         vscode.commands.registerCommand('extension.swarm-debugging.startSession', (task) => __awaiter(this, void 0, void 0, function* () {
+            if (vscode.debug.activeDebugSession) {
+                vscode.window.showErrorMessage('You can not start a SwarmSession while a debugging session is already running');
+                return;
+            }
             while (!sessionDescription) {
                 var sessionDescription = yield vscode.window.showInputBox({ prompt: 'Enter a description for the session you want to start' });
             }
@@ -89,7 +96,7 @@ function activate() {
                 return;
             }
             currentlyActiveTask.setID(task.taskId);
-            currentlyActiveSession = new session_1.Session(sessionDescription, new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
+            currentlyActiveSession = new session_1.Session(sessionDescription, new Date(), '', '', '', currentlyActiveDeveloper, currentlyActiveTask);
             sessionService.setSession(currentlyActiveSession);
             sessionService.startSession().then((res) => {
                 if (res > 0) {
@@ -99,6 +106,10 @@ function activate() {
             });
         }));
         vscode.commands.registerCommand('extension.swarm-debugging.stopSession', () => {
+            if (vscode.debug.activeDebugSession !== undefined) {
+                vscode.window.showInformationMessage('Stop the current debug session before stopping a swarm debug session');
+                return;
+            }
             sessionService.stopSession().then((res) => {
                 if (res > 0) {
                     clearSession();
@@ -119,10 +130,10 @@ function activate() {
             }
             else {
                 productService.chooseProduct(currentlyActiveDeveloper).then((res) => {
-                    if (res === undefined || typeof res === "number") {
+                    if (res === undefined || typeof res === 'number') {
                         return res;
                     }
-                    if (typeof res === "object") {
+                    if (typeof res === 'object') {
                         currentlyActiveProduct.setID(res.getID());
                         currentlyActiveProduct.setName(res.getName());
                         taskProvider.updateProductId(currentlyActiveProduct.getID());
@@ -168,7 +179,7 @@ function activate() {
                 // The logic is simple, compare all the past and present breakpoints,
                 // find which ones are new and them add them to the database
                 // There are some special treatment for the firstime, because in the
-                // first time the past state is equivalent to the breakpoints from 
+                // first time the past state is equivalent to the breakpoints from
                 // the database(Breakpoint not vscode.Breakpoint)
                 for (var i = 0; i < allBreakpointsActual.length; i++) {
                     shouldCreateBreakpoint = true;
@@ -190,7 +201,7 @@ function activate() {
                     if (shouldCreateBreakpoint) {
                         let breakpoint = allBreakpointsActual[i];
                         let swarmArtefact = new artefact_1.Artefact(fs.readFileSync(breakpoint.location.uri.fsPath, 'utf8'));
-                        let fullname = "";
+                        let fullname = '';
                         if (vscode.workspace.rootPath) {
                             fullname = getTypeFullname(vscode.workspace.rootPath, breakpoint.location.uri.fsPath);
                         }
@@ -218,7 +229,7 @@ function activate() {
                         let breakpointService = new breakpointService_1.BreakpointService(swarmBreakpoint);
                         let response = yield breakpointService.create();
                         if (response) {
-                            console.log("Breakpoint added!");
+                            console.log('Breakpoint added!');
                         }
                     }
                     if (isFirstTime) {
@@ -254,32 +265,32 @@ function deactivate() {
 }
 exports.deactivate = deactivate;
 function clearSet() {
-    currentlyActiveProduct = new product_1.Product(0, "");
-    currentlyActiveTask = new task_1.Task("", "", "", currentlyActiveProduct);
+    currentlyActiveProduct = new product_1.Product(0, '');
+    currentlyActiveTask = new task_1.Task('', '', '', currentlyActiveProduct);
     currentlyActiveDeveloper = new developer_1.Developer(0, '');
-    currentlyActiveSession = new session_1.Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
+    currentlyActiveSession = new session_1.Session('', new Date(), '', '', '', currentlyActiveDeveloper, currentlyActiveTask);
     sessionService = new sessionService_1.SessionService(currentlyActiveSession);
     productService = new productService_1.ProductService(currentlyActiveProduct);
     taskService = new taskService_1.TaskService(currentlyActiveTask);
 }
 function clearSession() {
-    currentlyActiveSession = new session_1.Session("", new Date(), "", "", "", currentlyActiveDeveloper, currentlyActiveTask);
+    currentlyActiveSession = new session_1.Session('', new Date(), '', '', '', currentlyActiveDeveloper, currentlyActiveTask);
     sessionService.setSession(currentlyActiveSession);
 }
 function fromPathToTypeName(path) {
-    let splittedPath = path.split("/");
-    return splittedPath[splittedPath.length - 1].split(".", 1)[0];
+    let splittedPath = path.split('/');
+    return splittedPath[splittedPath.length - 1].split('.', 1)[0];
 }
 function getTypeFullname(rootPath, filePath) {
-    let splittedRootPath = rootPath.split("/");
-    let splittedFilePath = filePath.split("/");
-    let fullname = "";
-    for (let i = splittedRootPath.length + 1; i < splittedFilePath.length; i++) {
-        if (i === splittedRootPath.length + 1) {
+    let splittedRootPath = rootPath.split('/');
+    let splittedFilePath = filePath.split('/');
+    let fullname = '';
+    for (let i = splittedRootPath.length - 1; i < splittedFilePath.length; i++) {
+        if (i === splittedRootPath.length - 1) {
             fullname = splittedFilePath[i];
         }
         else {
-            fullname = fullname + "." + splittedFilePath[i];
+            fullname = fullname + '.' + splittedFilePath[i];
         }
     }
     return fullname;
@@ -290,14 +301,14 @@ function toggleBreakpoints(task) {
         let allBreakpointsPast = yield breakpointService.getAll(task);
         let breakpoints = [];
         for (var i = 0; i < allBreakpointsPast.length; i++) {
-            let artefactSourceLines = allBreakpointsPast[i].getType().getArtefact().getSourceCode().split("\n");
+            let artefactSourceLines = allBreakpointsPast[i].getType().getArtefact().getSourceCode().split('\n');
             let actualFile = fs.readFileSync(allBreakpointsPast[i].getType().getFullPath(), 'utf8');
-            let actualSourceLines = actualFile.split("\n");
+            let actualSourceLines = actualFile.split('\n');
             let oldLine = artefactSourceLines[allBreakpointsPast[i].getLineNumber()];
             let actualLine = actualSourceLines[allBreakpointsPast[i].getLineNumber()];
             if (oldLine === actualLine) {
                 //@ts-ignore
-                let uri = new vscode.Uri("file", "", allBreakpointsPast[i].getType().getFullPath(), "", "");
+                let uri = new vscode.Uri('file', '', allBreakpointsPast[i].getType().getFullPath(), '', '');
                 let range = new vscode.Range(allBreakpointsPast[i].getLineNumber(), 0, allBreakpointsPast[i].getLineNumber(), 0);
                 let location = new vscode.Location(uri, range);
                 let breakpointVS = new vscode.SourceBreakpoint(location, true);
@@ -308,4 +319,5 @@ function toggleBreakpoints(task) {
         return true;
     });
 }
+//
 //# sourceMappingURL=extension.js.map
