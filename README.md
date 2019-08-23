@@ -1,6 +1,6 @@
 # Swarm Debugging Manager
 
-The Swarm Debugging Manager is a vscode extension used to manage Swarm Debugging accounts, products and tasks. It is included in the [Swarm Debugging version of vscode](https://github.com/SwarmDebugging/SwarmDebuggingVSCode). 
+The Swarm Debugging Manager is a vscode extension used to manage Swarm Debugging accounts, products, tasks and breakpoints. It is included in the [Swarm Debugging version of vscode](https://github.com/SwarmDebugging/SwarmDebuggingVSCode). 
 
 ## How to use
 
