@@ -1,65 +1,14 @@
-# SwarmAccountManager README
+# Swarm Debugging Manager
 
-This is the README for your extension "SwarmAccountManager". After writing up a brief description, we recommend including the following sections.
+The Swarm Debugging Manager is a vscode extension used to manage Swarm Debugging accounts, products, tasks and breakpoints. It is included in the [Swarm Debugging version of vscode](https://github.com/SwarmDebugging/SwarmDebuggingVSCode). 
 
-## Features
+## How to use
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+To use in plain vscode, download and place directly in vscode's extensions folder, you can also use the Swarm Debugging version of vscode. 
+You will need to setup the [Swarm Server(GraphQL_2019 branch)](https://github.com/SwarmDebugging/SwarmServer) for it to function properly.
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Using the extension is very simple, once vscode opened there will be an ant icon on the left side of the browser, it is the Swarm Debugging Manager extension, click on it.![1](media/SwarmDebuggingManager1.png) Then, you will have to log in, the extension will ask you if you want to log in an existing account or create a new one.
+after that, you will need to choose the product to work on, if you don't have any products created, you can create one in the drop down menu![3](media/SwarmDebuggingManager4.png). Then you will have to add tasks to your product, again in the drop down menu. The task will show in the tree view, while hovering on it you can see the task's commands: edit the task name, mark the task as done, start a debugging session or toggle breakpoint storage. 
+starting a session will record all the events that can happen in a debugging session, like stepping in, stepping out, continue and more (only in Swarm Debugging version of vscode). toggling breakpoints will store all the breakpoints in the database and register any addition or deletion of breakpoints. A Swarm Debugging session is stopped when the user clicks the stop currently active session in the drop down menu or when the debugging session ends.
+![2](media/SwarmDebuggingManager2.png)
+![4](media/SwarmDebuggingManager4.png)
